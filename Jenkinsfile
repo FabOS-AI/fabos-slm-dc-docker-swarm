@@ -96,10 +96,6 @@ for (kv in mapToList(scenarios)) {
                         'HYPERVISOR_ANSIBLE_PASSWORD=',
                         'ANSIBLE_SERIAL=5',
                         ]) {
-                            echo "${nodeName}"
-                            echo "${distName}"
-                            echo "${createRole}"
-                            echo "${createScenario}"
                             retry(2) {
                                 sh "cd ./roles/${createRole} && molecule reset -s ${createScenario} && molecule create -s ${createScenario}"
                             }
@@ -123,10 +119,6 @@ for (kv in mapToList(scenarios)) {
                             'HYPERVISOR_ANSIBLE_PASSWORD=',
                             'ANSIBLE_SERIAL=5',
                             ]) {
-                                echo "${nodeName}"
-                                echo "${distName}"
-                                echo "${role}"
-                                echo "${scenario}"
                                 sh "cd ./roles/${role} && molecule converge -s ${scenario} && molecule verify -s ${scenario}"
                             }
                         }
@@ -151,10 +143,6 @@ for (kv in mapToList(scenarios)) {
                         'HYPERVISOR_ANSIBLE_PASSWORD=',
                         'ANSIBLE_SERIAL=5',
                         ]) {
-                            echo "${nodeName}"
-                            echo "${distName}"
-                            echo "${destroyRole}"
-                            echo "${destroyScenario}"
                             sh "cd ./roles/${destroyRole} && molecule destroy -s ${destroyScenario}"
                         }
                     }
