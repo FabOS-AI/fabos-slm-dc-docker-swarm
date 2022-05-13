@@ -1,0 +1,36 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: docker_manager
+  gather_facts: false
+  vars:
+    ansible_libvirt_uri: >-
+      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
+    ansible_connection: "community.libvirt.libvirt_qemu"
+  run_once: yes
+  tasks:
+    - name: Include vars file
+      include_vars:
+        file: ./vars/main.yml
+
+    - name: Get name of service
+      set_fact:
+        service_name: "{{ docker_compose_file.services | first }}"
+
+    - name: Get infos about the stack
+      community.docker.docker_stack_info:
+      register: stack_info
+
+    - assert:
+        that: stack_info.results | selectattr('Name', 'equalto', service_id) | length == 1
+
+    - name: Get info from a service
+      community.docker.docker_swarm_service_info:
+        name: "{{ service_id }}_{{ service_name }}"
+      register: service_info
+
+    - assert:
+        that:
+          - service_info.exists == true
+          - service_info.service.Endpoint.Ports | selectattr('PublishedPort', '==', 4406) | length == 1

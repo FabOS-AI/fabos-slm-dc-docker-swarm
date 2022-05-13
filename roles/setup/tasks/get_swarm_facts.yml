@@ -1,0 +1,21 @@
+---
+- name: Set IP Address of Host
+  set_fact:
+    host_ip_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+- name: Get Swarm infos
+  docker_swarm:
+    state: present
+  register: docker_swarm_info
+
+- set_fact:
+    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+    docker_swarm_manager_ip: "{{ host_ip_address }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['all']}}"
+
+- set_fact:
+    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+  delegate_to: "localhost"
+  delegate_facts: true

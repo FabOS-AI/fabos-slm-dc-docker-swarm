@@ -1,0 +1,40 @@
+---
+- name: Converge
+  hosts: docker_manager
+  gather_facts: no
+  vars:
+    ansible_libvirt_uri: >-
+      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
+    ansible_connection: "community.libvirt.libvirt_qemu"
+  become: yes
+  run_once: yes
+  tasks:
+    - name: Include vars file
+      include_vars:
+        file: ./vars/main.yml
+
+    - set_fact:
+        service_id: "{{ service_id_1 }}"
+
+    - name: "Get Service names from namespace '{{ service_id }}'"
+      ansible.builtin.shell: "docker service ls --filter 'label=com.docker.stack.namespace={{ service_id }}' --format {%raw%}{{.Name}}{%endraw%}"
+      register: get_services_output
+      changed_when: false
+
+    - name: Extract service names from 'docker service ls'
+      set_fact:
+        service_names: "{{ get_services_output.stdout_lines }}"
+
+    - name: "Get Volume names from namespace '{{ service_id }}'"
+      ansible.builtin.shell: "docker volume ls --filter 'label=com.docker.stack.namespace={{ service_id }}' --format {%raw%}{{.Name}}{%endraw%}"
+      register: get_volume_output
+      changed_when: false
+
+    - name: Extract volume names from 'docker volume ls'
+      set_fact:
+        volume_names: "{{ get_volume_output.stdout_lines }}"
+
+    - assert:
+        that:
+          - service_names | default([]) | length == 0
+          - volume_names | default([]) | length == 0

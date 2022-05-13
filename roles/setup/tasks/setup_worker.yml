@@ -1,0 +1,16 @@
+---
+- assert:
+    that:
+      - docker_swarm_facts is defined
+      - docker_swarm_manager_ip is defined
+
+- name: Inspect swarm
+  docker_host_info:
+  register: node_info
+
+- name: Add nodes
+  docker_swarm:
+    state: join
+    advertise_addr: "{{ ansible_default_ipv4.address }}"
+    join_token: "{{ docker_swarm_facts.JoinTokens.Worker }}"
+    remote_addrs: [ '{{ docker_swarm_manager_ip }}:2377' ]

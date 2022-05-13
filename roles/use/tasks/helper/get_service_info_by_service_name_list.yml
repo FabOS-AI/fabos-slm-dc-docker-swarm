@@ -1,0 +1,9 @@
+---
+- name: Get Infos about all services
+  community.docker.docker_swarm_service_info:
+    name: "{{ item }}"
+  register: service_info
+
+- name: Add Service info to List
+  set_fact:
+    service_info_list: "{{ service_info_list | default([]) + [service_info.service] }}"

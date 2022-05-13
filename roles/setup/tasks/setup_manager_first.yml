@@ -1,0 +1,34 @@
+- name: Set IP Address of Host
+  set_fact:
+    host_ip_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+- name: Install required pip modules
+  pip:
+    name:
+      - jsondiff
+
+- name: "Add iptable rule for port 2377"
+  when: ansible_lsb.id is not defined or ansible_lsb.id != 'Raspbian'
+  iptables:
+    action: append
+    chain: INPUT
+    protocol: tcp
+    destination_port: "2377"
+    ctstate: ["NEW", "ESTABLISHED"]
+    match: ["conntrack"]
+    jump: "ACCEPT"
+
+- name: "Add iptable rule for port 2377"
+  when:
+    - ansible_lsb.id is defined
+    - ansible_lsb.id == 'Raspbian'
+  shell: /sbin/iptables-legacy -t filter -A INPUT -p tcp -m conntrack -j ACCEPT --destination-port 2377 --ctstate NEW,ESTABLISHED
+
+- name: Init a new swarm with default parameters
+  docker_swarm:
+    state: present
+    advertise_addr: "{{ host_ip_address }}"
+  register: docker_swarm_info
+
+- name: Get swarm facts
+  include_tasks: get_swarm_facts.yml

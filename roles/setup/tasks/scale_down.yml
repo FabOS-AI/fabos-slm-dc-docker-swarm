@@ -1,0 +1,31 @@
+---
+- name: Check if docker is installed
+  docker_host_info:
+  failed_when: false
+  register: docker_info
+
+- set_fact:
+    can_talk_to_docker: "{{ docker_info.can_talk_to_docker | default(true) }}"
+
+- name: Set Docker Node ID
+  when: can_talk_to_docker
+  set_fact:
+    docker_worker_info: "{{ docker_info.host_info.Swarm }}"
+
+- name: Delegate Node infos to docker_manager
+  when: docker_worker_info is defined
+  set_fact:
+    docker_worker_info: "{{ docker_worker_info }}"
+  delegate_facts: true
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['docker_manager'] }}"
+
+- name: Leave swarm
+  include_tasks: uninstall.yml
+
+- name: Remove Node from Node list
+  when: docker_worker_info is defined
+  docker_swarm:
+    state: remove
+    node_id: "{{ docker_worker_info.NodeID }}"
+  delegate_to: "{{ groups['docker_manager'] | first }}"

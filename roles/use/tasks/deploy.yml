@@ -1,0 +1,18 @@
+---
+- name: "Check required variables"
+  assert:
+    that: "{{ item.name }} is defined"
+    fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
+  with_items:
+    - { name: "service_id",             description: "Id of the service instance that will be deployed." }
+    - { name: "docker_compose_file",    description: "Content of Docker Compose file." }
+
+- set_fact:
+    docker_compose_list: "{{ [ docker_compose_file ] }}"
+
+- name: Deploy Stack
+  docker_stack:
+    state: present
+    name: "{{ service_id }}"
+    compose: "{{ docker_compose_list }}"
+  run_once: true

@@ -1,0 +1,14 @@
+---
+- name: Check if docker is installed
+  docker_host_info:
+  failed_when: false
+  register: docker_info
+
+- set_fact:
+    can_talk_to_docker: "{{ docker_info.can_talk_to_docker | default(true) }}"
+
+- name: Leave the swarm
+  docker_swarm:
+    state: absent
+    force: yes
+  when: can_talk_to_docker

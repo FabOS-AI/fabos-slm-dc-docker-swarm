@@ -1,0 +1,38 @@
+---
+- assert:
+    that:
+      - docker_swarm_facts is defined
+      - docker_swarm_manager_ip is defined
+
+- name: Install required pip modules
+  pip:
+    name:
+      - jsondiff
+
+- name: "Add iptable rule for port 2377"
+  when: ansible_lsb.id is not defined or ansible_lsb.id != 'Raspbian'
+  iptables:
+    action: append
+    chain: INPUT
+    protocol: tcp
+    destination_port: "2377"
+    ctstate: ["NEW", "ESTABLISHED"]
+    match: ["conntrack"]
+    jump: "ACCEPT"
+
+- name: "Add iptable rule for port 2377"
+  when:
+    - ansible_lsb.id is defined
+    - ansible_lsb.id == 'Raspbian'
+  shell: /sbin/iptables-legacy -t filter -A INPUT -p tcp -m conntrack -j ACCEPT --destination-port 2377 --ctstate NEW,ESTABLISHED
+
+- name: Inspect swarm
+  docker_host_info:
+  register: node_info
+
+- name: Add nodes
+  docker_swarm:
+    state: join
+    advertise_addr: "{{ ansible_default_ipv4.address }}"
+    join_token: "{{ docker_swarm_facts.JoinTokens.Manager }}"
+    remote_addrs: [ '{{ docker_swarm_manager_ip }}:2377' ]

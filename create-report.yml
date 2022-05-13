@@ -1,0 +1,30 @@
+---
+- name: Create Test Report
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Set Role and Scenario name
+      set_fact:
+        role_name: "{{ lookup('env', 'MOLECULE_ROLE') }}"
+        scenario_name: "{{ lookup('env', 'MOLECULE_SCENARIO') }}"
+
+    - name: Lookup report file
+      set_fact:
+        raw_report: "{{ lookup('file', './roles/'+role_name+'/'+scenario_name+'_report') | split('\n\n') }}"
+
+    - name: Create summary
+      set_fact:
+        summary: "{{ summary | default([]) + [item] }}"
+      loop: "{{ raw_report }}"
+      when: item is not match("TASK*")
+
+    - name: Create empty summary file
+      file:
+        path: "./{{role_name}}_{{ scenario_name }}.report"
+        state: touch
+        force: yes
+
+    - shell:
+        cmd: "echo '{{ item }}' >> {{ role_name }}_{{ scenario_name }}.report"
+      loop: "{{ summary }}"
