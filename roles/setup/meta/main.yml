@@ -1,4 +1,4 @@
-dependencies: [https://github.com/FabOS-AI/fabos-slm-dc-docker]
+dependencies: []
 galaxy_info:
   author: Benjamin Goetz
   namespace: fabos.docker_swarm
