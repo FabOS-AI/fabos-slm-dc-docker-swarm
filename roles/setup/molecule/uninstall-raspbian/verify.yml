@@ -1,0 +1,18 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Get Docker Infos
+      ansible.builtin.shell: docker info
+      failed_when: false
+      changed_when: false
+      register: docker_info
+
+    - assert:
+        that: docker_info.rc != 0
+        success_msg: "Docker cmd not available"
+        fail_msg: "Docker cmd still available but should not."
+

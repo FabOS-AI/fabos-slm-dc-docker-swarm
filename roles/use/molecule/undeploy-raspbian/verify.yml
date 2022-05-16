@@ -1,0 +1,33 @@
+---
+- name: Converge
+  hosts: docker_manager
+  gather_facts: yes
+  become: yes
+  run_once: yes
+  tasks:
+    - name: Include vars file
+      include_vars:
+        file: ./vars/main.yml
+
+    - name: "Get Service names from namespace '{{ service_id }}'"
+      ansible.builtin.shell: "docker service ls --filter 'label=com.docker.stack.namespace={{ service_id }}' --format {%raw%}{{.Name}}{%endraw%}"
+      register: get_services_output
+      changed_when: false
+
+    - name: Extract service names from 'docker service ls'
+      set_fact:
+        service_names: "{{ get_services_output.stdout_lines }}"
+
+    - name: "Get Volume names from namespace '{{ service_id }}'"
+      ansible.builtin.shell: "docker volume ls --filter 'label=com.docker.stack.namespace={{ service_id }}' --format {%raw%}{{.Name}}{%endraw%}"
+      register: get_volume_output
+      changed_when: false
+
+    - name: Extract volume names from 'docker volume ls'
+      set_fact:
+        volume_names: "{{ get_volume_output.stdout_lines }}"
+
+    - assert:
+        that:
+          - service_names | default([]) | length == 0
+          - volume_names | default([]) | length == 0

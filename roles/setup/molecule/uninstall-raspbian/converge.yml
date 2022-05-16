@@ -1,0 +1,16 @@
+---
+- name: Converge - Leave Swarm and Uninstall docker
+  hosts: all
+  gather_facts: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  tasks:
+    - name: "Include fabos.docker_swarm.setup - uninstall"
+      include_role:
+        name: setup
+        tasks_from: uninstall.yml
+
+    - name: "Include fabos.docker.setup - uninstall"
+      include_role:
+        name: fabos.docker.setup
+        tasks_from: uninstall.yml

@@ -1,0 +1,50 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+platforms:
+  - name: ${RASPI_1_ADDRESS}
+    address: ${RASPI_1_ADDRESS}
+    user: ${RASPI_USER}
+    password: ${RASPI_PASSWORD}
+    groups:
+      - docker_manager
+
+  - name: ${RASPI_2_ADDRESS}
+    address: ${RASPI_2_ADDRESS}
+    user: ${RASPI_USER}
+    password: ${RASPI_PASSWORD}
+    groups:
+      - docker_manager
+
+  - name: ${RASPI_3_ADDRESS}
+    address: ${RASPI_3_ADDRESS}
+    user: ${RASPI_USER}
+    password: ${RASPI_PASSWORD}
+    groups:
+      - docker_manager
+
+  - name: ${RASPI_4_ADDRESS}
+    address: ${RASPI_4_ADDRESS}
+    user: ${RASPI_USER}
+    password: ${RASPI_PASSWORD}
+    groups:
+      - docker_worker
+
+  - name: ${RASPI_5_ADDRESS}
+    address: ${RASPI_5_ADDRESS}
+    user: ${RASPI_USER}
+    password: ${RASPI_PASSWORD}
+    groups:
+      - docker_worker
+      - scale_up_host
+      - scale_down_host
+provisioner:
+  name: ansible
+  playbooks:
+    create: ../../../setup/molecule/default-raspbian/create.yml
+    prepare: ../../../setup/molecule/install-raspbian/converge.yml
+    destroy: ../../../setup/molecule/default-raspbian/destroy.yml
+verifier:
+  name: ansible

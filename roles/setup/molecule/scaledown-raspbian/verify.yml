@@ -1,0 +1,20 @@
+---
+- name: Get Swarm facts
+  hosts: docker_manager
+  gather_facts: no
+  run_once: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  tasks:
+    - name: "Get Nodes of docker swarm"
+      ansible.builtin.shell: "docker node ls --format {%raw%}{{.Hostname}}{%endraw%}"
+      register: get_nodes_output
+      changed_when: false
+
+    - name: Print swarm node names
+      debug:
+        var: get_nodes_output.stdout_lines
+
+    - name:
+      assert:
+        that: get_nodes_output.stdout_lines | length == 4

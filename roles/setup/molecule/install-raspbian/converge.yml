@@ -1,0 +1,46 @@
+---
+- name: Converge - Install docker
+  hosts: all:!scale_up_host
+  gather_facts: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  collections:
+    - fabos.docker
+  tasks:
+    - name: "Include fabos.docker.setup - install"
+      include_role:
+        name: fabos.docker.setup
+        tasks_from: install.yml
+
+- name: Converge - Setup First Manager
+  hosts: docker_manager[0]
+  gather_facts: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  tasks:
+    - name: "Include fabos.docker_swarm.setup - setup_manager_first.yml"
+      include_role:
+        name: setup
+        tasks_from: setup_manager_first.yml
+
+- name: Converge - Setup other Managers
+  hosts: docker_manager[1:]
+  gather_facts: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  tasks:
+    - name: "Include fabos.docker_swarm.setup - setup_manager_other.yml"
+      include_role:
+        name: setup
+        tasks_from: setup_manager_other.yml
+
+- name: Converge - Setup Workers
+  hosts: docker_worker:!scale_up_host
+  gather_facts: yes
+  become: yes
+  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+  tasks:
+    - name: "Include fabos.docker_swarm.setup - setup_worker.yml"
+      include_role:
+        name: setup
+        tasks_from: setup_worker.yml

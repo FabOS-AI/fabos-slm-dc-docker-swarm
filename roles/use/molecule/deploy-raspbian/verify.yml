@@ -1,0 +1,33 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify - Deploy
+  hosts: docker_manager
+  become: yes
+  gather_facts: yes
+  run_once: yes
+  tasks:
+    - name: Include vars file
+      include_vars:
+        file: ./vars/main.yml
+
+    - name: Get name of service
+      set_fact:
+        service_name: "{{ docker_compose_file.services | first }}"
+
+    - name: Get infos about the stack
+      community.docker.docker_stack_info:
+      register: stack_info
+
+    - assert:
+        that: stack_info.results | selectattr('Name', 'equalto', service_id) | length == 1
+
+    - name: Get info from a service
+      community.docker.docker_swarm_service_info:
+        name: "{{ service_id }}_{{ service_name }}"
+      register: service_info
+
+    - assert:
+        that:
+          - service_info.exists == true
+          - service_info.service.Endpoint.Ports | selectattr('PublishedPort', '==', 4406) | length == 1
