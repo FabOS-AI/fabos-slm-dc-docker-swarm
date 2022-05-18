@@ -8,6 +8,10 @@
         name: inventory_helper
         tasks_from: create_inventory.yml
 
+    - include_role:
+        name: inventory_helper
+        tasks_from: create_single_host_inventory.yml
+
 - name: Install docker
   hosts: all
   gather_facts: yes
@@ -30,7 +34,7 @@
         tasks_from: get_swarm_facts.yml
 
 - name: Setup Workers
-  hosts: docker_worker
+  hosts: target_host
   gather_facts: yes
   become: yes
   tasks:
