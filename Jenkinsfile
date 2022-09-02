@@ -85,23 +85,23 @@ node {
         }
 
         stage("ubuntu1804 - Create") {
-            sh " cd ./roles/setup && molecule create -s install-ubuntu1804"
+            sh " cd ./roles/setup && molecule reset -s install-ubuntu1804 && molecule create -s install-ubuntu1804"
         }
 
         stage("ubuntu2004 - Create") {
-            sh " cd ./roles/setup && molecule create -s install-ubuntu2004"
+            sh " cd ./roles/setup && molecule reset -s install-ubuntu2004 && molecule create -s install-ubuntu2004"
         }
 
         stage("ubuntu2204 - Create") {
-            sh " cd ./roles/setup && molecule create -s install-ubuntu2204"
+            sh " cd ./roles/setup && molecule reset -s install-ubuntu2204 && molecule create -s install-ubuntu2204"
         }
 
         stage("centos7 - Create") {
-            sh " cd ./roles/setup && molecule create -s install-centos7"
+            sh " cd ./roles/setup && molecule reset -s install-centos7 && molecule create -s install-centos7"
         }
 
         stage("centos8 - Create") {
-            sh " cd ./roles/setup && molecule create -s install-centos8"
+            sh " cd ./roles/setup && molecule reset -s install-centos8 && molecule create -s install-centos8"
         }
 
         parallel(parallel_stages)
