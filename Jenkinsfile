@@ -1,106 +1,71 @@
+def scenarios = [
+    "ubuntu1804" : [
+            ["setup",   "install"],
+            ["setup",   "scaleup"],
+            ["setup",   "scaledown"],
+            ["use",     "deploy"],
+            ["use",     "undeploy"],
+            ["setup",   "uninstall"],
+    ],
+    "ubuntu2004": [
+            ["setup",   "install"],
+            ["setup",   "scaleup"],
+            ["setup",   "scaledown"],
+            ["use",     "deploy"],
+            ["use",     "undeploy"],
+            ["setup",   "uninstall"],
+    ],
+    "ubuntu2204" : [
+            ["setup",   "install"],
+            ["setup",   "scaleup"],
+            ["setup",   "scaledown"],
+            ["use",     "deploy"],
+            ["use",     "undeploy"],
+            ["setup",   "uninstall"],
+    ],
+    "centos7" : [
+            ["setup",   "install"],
+            ["setup",   "scaleup"],
+            ["setup",   "scaledown"],
+            ["use",     "deploy"],
+            ["use",     "undeploy"],
+            ["setup",   "uninstall"],
+    ],
+    "centos8" : [
+            ["setup",   "install"],
+            ["setup",   "scaleup"],
+            ["setup",   "scaledown"],
+            ["use",     "deploy"],
+            ["use",     "undeploy"],
+            ["setup",   "uninstall"],
+    ]
+]
+
 parallel_stages = [:]
 
-parallel_stages["Ubuntu 22"] = {
-    stage("Ubuntu 22 - Create") {
+for (kv in mapToList(scenarios)) {
+    def platform = kv[0]
+    def testList = kv[1]
+
+    parallel_stages[platform] = {
         docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule create -s install-ubuntu2204"
-        }
-    }
 
-    stage("Ubuntu 22 - Install") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s install-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - ScaleUp") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaleup-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - ScaleDown") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaledown-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - Deploy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s deploy-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - Undeploy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s undeploy-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - Uninstall") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s uninstall-ubuntu2204  --destroy never"
-        }
-    }
-
-    stage("Ubuntu 22 - Destroy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml"
-            sh "cd ./roles/setup && molecule destroy -s install-ubuntu2204"
-        }
-    }
-}
-
-parallel_stages["Ubuntu 20"] = {
-
-    docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-
-        stage("Ubuntu 20 - Create") {
-            sh "ansible-galaxy install -f -r requirements.yml"
-            sh "cd ./roles/setup && molecule create -s install-ubuntu2004"
-        }
-
-        stage("Ubuntu 20 - Install") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s install-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - ScaleUp") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaleup-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - ScaleDown") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaledown-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - Deploy") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s deploy-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - Undeploy") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s undeploy-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - Uninstall") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s uninstall-ubuntu2004  --destroy never"
-//            }
-        }
-
-        stage("Ubuntu 20 - Destroy") {
-//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            stage("${platform} - Dependencies") {
                 sh "ansible-galaxy install -f -r requirements.yml"
-                sh "cd ./roles/setup && molecule destroy -s install-ubuntu2004"
-//            }
+            }
+
+            for (int i = 0; i < testList.size(); i++) {
+                def role = testList[i][0]
+                def scenario = testList[i][1]
+
+                stage("${platform} - ${scenario}") {
+                    sh "cd ./roles/${role} && molecule test -s ${scenario}-${platform}  --destroy never"
+                }
+            }
+
+            stage("${platform} - Destroy") {
+                sh "cd ./roles/setup && molecule destroy -s install-${platform}"
+            }
         }
     }
 }
@@ -114,7 +79,38 @@ node {
             usernameVariable: 'VSPHERE_USER',
             passwordVariable: 'VSPHERE_PASSWORD'
     )]) {
-        
+
+        stage("dependencies") {
+            sh "ansible-galaxy install -f -r requirements.yml"
+        }
+
+        stage("ubuntu1804 - Create") {
+            sh " cd ./roles/setup && molecule create -s install-ubuntu1804"
+        }
+
+        stage("ubuntu2004 - Create") {
+            sh " cd ./roles/setup && molecule create -s install-ubuntu2004"
+        }
+
+        stage("ubuntu2204 - Create") {
+            sh " cd ./roles/setup && molecule create -s install-ubuntu2204"
+        }
+
+        stage("centos7 - Create") {
+            sh " cd ./roles/setup && molecule create -s install-centos7"
+        }
+
+        stage("centos8 - Create") {
+            sh " cd ./roles/setup && molecule create -s install-centos8"
+        }
+
         parallel(parallel_stages)
+    }
+}
+
+@NonCPS
+List<List<?>> mapToList(Map map) {
+    return map.collect { it ->
+        [it.key, it.value]
     }
 }
