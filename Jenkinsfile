@@ -62,10 +62,6 @@ for (kv in mapToList(scenarios)) {
                     sh "cd ./roles/${role} && molecule test -s ${scenario}-${platform}  --destroy never"
                 }
             }
-
-            stage("${platform} - Destroy") {
-                sh "cd ./roles/setup && molecule destroy -s install-${platform}"
-            }
         }
     }
 }
@@ -84,27 +80,27 @@ node {
             sh "ansible-galaxy install -f -r requirements.yml"
         }
 
-        stage("ubuntu1804 - Create") {
-            sh " cd ./roles/setup && molecule reset -s install-ubuntu1804 && molecule create -s install-ubuntu1804"
-        }
+        try {
+            for (kv in mapToList(scenarios)) {
+                def platform = kv[0]
+                def testList = kv[1]
 
-        stage("ubuntu2004 - Create") {
-            sh " cd ./roles/setup && molecule reset -s install-ubuntu2004 && molecule create -s install-ubuntu2004"
-        }
+                stage("${platform} - Create") {
+                    sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+                }
+            }
 
-        stage("ubuntu2204 - Create") {
-            sh " cd ./roles/setup && molecule reset -s install-ubuntu2204 && molecule create -s install-ubuntu2204"
-        }
+            parallel(parallel_stages)
+        } finally {
+            for (kv in mapToList(scenarios)) {
+                def platform = kv[0]
+                def testList = kv[1]
 
-        stage("centos7 - Create") {
-            sh " cd ./roles/setup && molecule reset -s install-centos7 && molecule create -s install-centos7"
+                stage("${platform} - Destroy") {
+                    sh "cd ./roles/setup && molecule destroy -s install-${platform}"
+                }
+            }
         }
-
-        stage("centos8 - Create") {
-            sh " cd ./roles/setup && molecule reset -s install-centos8 && molecule create -s install-centos8"
-        }
-
-        parallel(parallel_stages)
     }
 }
 
