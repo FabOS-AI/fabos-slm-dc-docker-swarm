@@ -6,32 +6,27 @@ driver:
 
 platforms:
   - name: ubuntu2204-1
-    os: ubuntu
-    version: 2204
+    template_name: ubuntu-22-04
     groups:
       - docker_manager
 
   - name: ubuntu2204-2
-    os: ubuntu
-    version: 2204
+    template_name: ubuntu-22-04
     groups:
       - docker_manager
 
   - name: ubuntu2204-3
-    os: ubuntu
-    version: 2204
+    template_name: ubuntu-22-04
     groups:
       - docker_manager
 
   - name: ubuntu2204-4
-    os: ubuntu
-    version: 2204
+    template_name: ubuntu-22-04
     groups:
       - docker_worker
 
   - name: ubuntu2204-5
-    os: ubuntu
-    version: 2204
+    template_name: ubuntu-22-04
     groups:
       - docker_worker
       - scale_down_host
