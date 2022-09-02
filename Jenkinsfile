@@ -52,53 +52,55 @@ parallel_stages["Ubuntu 22"] = {
 }
 
 parallel_stages["Ubuntu 20"] = {
-    stage("Ubuntu 20 - Create") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+
+    docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+
+        stage("Ubuntu 20 - Create") {
             sh "ansible-galaxy install -f -r requirements.yml"
             sh "cd ./roles/setup && molecule create -s install-ubuntu2004"
         }
-    }
 
-    stage("Ubuntu 20 - Install") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s install-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - Install") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s install-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - ScaleUp") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaleup-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - ScaleUp") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaleup-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - ScaleDown") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaledown-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - ScaleDown") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s scaledown-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - Deploy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s deploy-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - Deploy") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s deploy-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - Undeploy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s undeploy-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - Undeploy") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/use && molecule test -s undeploy-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - Uninstall") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s uninstall-ubuntu2004  --destroy never"
+        stage("Ubuntu 20 - Uninstall") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml && cd ./roles/setup && molecule test -s uninstall-ubuntu2004  --destroy never"
+//            }
         }
-    }
 
-    stage("Ubuntu 20 - Destroy") {
-        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-            sh "ansible-galaxy install -f -r requirements.yml"
-            sh "cd ./roles/setup && molecule destroy -s install-ubuntu2004"
+        stage("Ubuntu 20 - Destroy") {
+//            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                sh "ansible-galaxy install -f -r requirements.yml"
+                sh "cd ./roles/setup && molecule destroy -s install-ubuntu2004"
+//            }
         }
     }
 }
