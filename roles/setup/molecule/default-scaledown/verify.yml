@@ -1,13 +1,8 @@
 ---
 - name: Converge - Install docker
-  hosts: all:!hypervisor
+  hosts: all
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: Gather Facts
       ansible.builtin.setup:
@@ -22,12 +17,7 @@
   hosts: docker_manager
   gather_facts: no
   run_once: yes
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: "Get Nodes of docker swarm"
       ansible.builtin.shell: "docker node ls --format {%raw%}{{.Hostname}}{%endraw%}"

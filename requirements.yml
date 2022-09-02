@@ -2,7 +2,7 @@
 collections:
   - name: "https://github.com/FabOS-AI/fabos-slm-dc-docker"
     type: git
-    version: main
+    version: develop
 
 roles:
   - src: "git+https://github.com/FabOS-AI/molecule_libvirt.git"

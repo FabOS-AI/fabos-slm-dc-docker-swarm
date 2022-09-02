@@ -3,7 +3,7 @@
   hosts: scale_down_host
   gather_facts: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+
   tasks:
     - name: "Include fabos.docker_swarm.setup - uninstall"
       include_role:

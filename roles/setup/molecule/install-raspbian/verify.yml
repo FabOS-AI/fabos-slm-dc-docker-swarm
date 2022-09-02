@@ -4,7 +4,7 @@
   gather_facts: yes
   run_once: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+
   tasks:
     - name: "Get Nodes of docker swarm"
       ansible.builtin.shell: "docker node ls --format {%raw%}{{.Hostname}}{%endraw%}"

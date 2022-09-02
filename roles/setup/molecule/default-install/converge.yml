@@ -1,13 +1,8 @@
 ---
 - name: Converge - Install docker
-  hosts: all:!hypervisor
+  hosts: all
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: Gather Facts
       ansible.builtin.setup:
@@ -20,14 +15,9 @@
       
 
 - name: Converge - Install docker
-  hosts: all:!hypervisor:!scale_up_host
+  hosts: all:!scale_up_host
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   collections:
     - fabos.docker
   tasks:
@@ -39,12 +29,7 @@
 - name: Converge - Setup First Manager
   hosts: docker_manager[0]
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: "Include fabos.docker_swarm.setup - setup_manager_first.yml"
       include_role:
@@ -54,12 +39,7 @@
 - name: Converge - Setup other Managers
   hosts: docker_manager[1:]
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: "Include fabos.docker_swarm.setup - setup_manager_other.yml"
       include_role:
@@ -69,12 +49,7 @@
 - name: Converge - Setup Workers
   hosts: docker_worker:!scale_up_host
   gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: "Include fabos.docker_swarm.setup - setup_worker.yml"
       include_role:

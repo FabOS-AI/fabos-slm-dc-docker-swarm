@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+
   collections:
     - fabos.docker
   tasks:
@@ -18,7 +18,7 @@
   gather_facts: yes
   run_once: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+
   tasks:
     - name: "Include fabos.docker_swarm.setup - setup_manager_first.yml"
       include_role:
@@ -30,7 +30,7 @@
   hosts: docker_worker
   gather_facts: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
+
   tasks:
     - name: "Include fabos.docker_swarm.setup - setup_worker.yml"
       include_role:
