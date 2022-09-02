@@ -55,7 +55,8 @@ for (kv in mapToList(scenarios)) {
             }
 
             stage("${platform} - Create") {
-                sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+//                sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+                sh " cd ./roles/setup && molecule create -s install-${platform}"
             }
 
             for (int i = 0; i < testList.size(); i++) {
