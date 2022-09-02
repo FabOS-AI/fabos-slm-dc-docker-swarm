@@ -3,25 +3,33 @@ parallel_destroy_stages = [:]
 
 parallel_create_stages["Ubuntu 22"] = {
     stage("Create") {
-        sh "cd ./roles/setup && molecule reset -s install-ubuntu2204 && molecule create -s install-ubuntu2204"
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            sh "cd ./roles/setup && molecule reset -s install-ubuntu2204 && molecule create -s install-ubuntu2204"
+        }
     }
 }
 
 parallel_create_stages["Ubuntu 20"] = {
     stage("Create") {
-        sh "cd ./roles/setup && molecule reset -s install-ubuntu2004 && molecule create -s install-ubuntu2004"
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            sh "cd ./roles/setup && molecule reset -s install-ubuntu2004 && molecule create -s install-ubuntu2004"
+        }
     }
 }
 
 parallel_destroy_stages["Ubuntu 22"] = {
     stage("Destroy") {
-        sh "cd ./roles/setup && molecule destroy -s install-ubuntu2204"
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            sh "cd ./roles/setup && molecule destroy -s install-ubuntu2204"
+        }
     }
 }
 
 parallel_destroy_stages["Ubuntu 20"] = {
     stage("Destroy") {
-        sh "cd ./roles/setup && molecule destroy -s install-ubuntu2004"
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            sh "cd ./roles/setup && molecule destroy -s install-ubuntu2004"
+        }
     }
 }
 
