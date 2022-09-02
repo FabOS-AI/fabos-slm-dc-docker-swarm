@@ -4,7 +4,7 @@
 - name: Verify
   hosts: docker_manager
   gather_facts: false
-
+  become: yes
   run_once: yes
   tasks:
     - name: Include vars file
