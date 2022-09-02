@@ -50,23 +50,30 @@ for (kv in mapToList(scenarios)) {
     parallel_stages[platform] = {
         docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
 
-            stage("${platform} - Dependencies") {
-                sh "ansible-galaxy install -f -r requirements.yml"
-            }
+            try {
+                stage("${platform} - Dependencies") {
+                    sh "ansible-galaxy install -f -r requirements.yml"
+                }
 
-            stage("${platform} - Create") {
-//                sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
-                sh " cd ./roles/setup && molecule create -s install-${platform}"
-            }
+                stage("${platform} - Create") {
+                    //                sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+                    sh " cd ./roles/setup && molecule create -s install-${platform}"
+                }
 
-            for (int i = 0; i < testList.size(); i++) {
-                def role = testList[i][0]
-                def scenario = testList[i][1]
+                for (int i = 0; i < testList.size(); i++) {
+                    def role = testList[i][0]
+                    def scenario = testList[i][1]
 
-                stage("${platform} - ${scenario}") {
-                    sh "cd ./roles/${role} && molecule test -s ${scenario}-${platform}  --destroy never"
+                    stage("${platform} - ${scenario}") {
+                        sh "cd ./roles/${role} && molecule test -s ${scenario}-${platform}  --destroy never"
+                    }
+                }
+            } finally {
+                stage("${platform} - Destroy") {
+                    sh "cd ./roles/setup && molecule destroy -s install-${platform}"
                 }
             }
+
         }
     }
 }
@@ -81,22 +88,8 @@ node {
             passwordVariable: 'VSPHERE_PASSWORD'
     )]) {
 
-        stage("dependencies") {
-            sh "ansible-galaxy install -f -r requirements.yml"
-        }
+        parallel(parallel_stages)
 
-        try {
-            parallel(parallel_stages)
-        } finally {
-            for (kv in mapToList(scenarios)) {
-                def platform = kv[0]
-                def testList = kv[1]
-
-                stage("${platform} - Destroy") {
-                    sh "cd ./roles/setup && molecule destroy -s install-${platform}"
-                }
-            }
-        }
     }
 }
 
