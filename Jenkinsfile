@@ -54,6 +54,10 @@ for (kv in mapToList(scenarios)) {
                 sh "ansible-galaxy install -f -r requirements.yml"
             }
 
+            stage("${platform} - Create") {
+                sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+            }
+
             for (int i = 0; i < testList.size(); i++) {
                 def role = testList[i][0]
                 def scenario = testList[i][1]
@@ -81,15 +85,6 @@ node {
         }
 
         try {
-            for (kv in mapToList(scenarios)) {
-                def platform = kv[0]
-                def testList = kv[1]
-
-                stage("${platform} - Create") {
-                    sh " cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
-                }
-            }
-
             parallel(parallel_stages)
         } finally {
             for (kv in mapToList(scenarios)) {
