@@ -2,9 +2,7 @@
 - name: Converge - Install docker
   hosts: all
   gather_facts: no
-
   become: yes
-
   tasks:
     - name: Gather Facts
       ansible.builtin.setup:
