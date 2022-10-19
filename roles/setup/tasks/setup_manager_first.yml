@@ -17,6 +17,7 @@
     ctstate: ["NEW", "ESTABLISHED"]
     match: ["conntrack"]
     jump: "ACCEPT"
+  changed_when: false
 
 - name: "Add iptable rule for port 2377"
   when:
@@ -24,7 +25,44 @@
     - ansible_lsb.id == 'Raspbian'
   shell: /sbin/iptables-legacy -t filter -A INPUT -p tcp -m conntrack -j ACCEPT --destination-port 2377 --ctstate NEW,ESTABLISHED
 
+- name: "Add firewall rules (CentOS)"
+  when: ansible_distribution == 'CentOS'
+  block:
+    - name: "Add rule"
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        immediate: yes
+        state: enabled
+      loop:
+        - 2376/tcp
+        - 2377/tcp
+        - 7946/tcp
+        - 7946/udp
+        - 4789/udp
+      register: add_firewall_rule
+
+    - name: Restart services
+      when: add_firewall_rule.changed
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: "{{ item }}"
+      loop:
+        - firewalld
+        - docker
+
+- name: Init a new swarm with default parameters (Legacy)
+  when: ansible_distribution == 'CentOS'
+  ansible.builtin.shell: "docker swarm init --advertise-addr {{ host_ip_address }}"
+  failed_when:
+    - docker_swarm_info_shell.stderr_lines | length > 0
+    - not 'This node is already part of a swarm' in docker_swarm_info_shell.stderr
+  changed_when: docker_swarm_info_shell.stderr_lines | length == 0
+  register: docker_swarm_info_shell
+
 - name: Init a new swarm with default parameters
+  when: ansible_distribution != 'CentOS'
   docker_swarm:
     state: present
     advertise_addr: "{{ host_ip_address }}"

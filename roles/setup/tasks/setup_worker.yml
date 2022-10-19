@@ -1,7 +1,8 @@
 ---
 - assert:
     that:
-      - docker_swarm_facts is defined
+#      - docker_swarm_facts is defined
+      - docker_swarm_join_token_worker is defined
       - docker_swarm_manager_ip is defined
 
 - name: Inspect swarm
@@ -9,8 +10,18 @@
   register: node_info
 
 - name: Add nodes
+  when: ansible_distribution != 'CentOS'
   docker_swarm:
     state: join
     advertise_addr: "{{ ansible_default_ipv4.address }}"
     join_token: "{{ docker_swarm_facts.JoinTokens.Worker }}"
     remote_addrs: [ '{{ docker_swarm_manager_ip }}:2377' ]
+
+- name: Add nodes (Legacy)
+  when: ansible_distribution == 'CentOS'
+  ansible.builtin.shell: "docker swarm join --token {{ docker_swarm_join_token_worker }} {{ docker_swarm_manager_ip }}:2377"
+  failed_when:
+    - add_nodes_result_shell.stderr_lines | length > 0
+    - not 'This node is already part of a swarm' in add_nodes_result_shell.stderr
+  changed_when: add_nodes_result_shell.stderr_lines | length == 0
+  register: add_nodes_result_shell

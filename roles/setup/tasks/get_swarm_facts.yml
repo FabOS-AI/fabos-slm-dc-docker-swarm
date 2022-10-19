@@ -3,19 +3,40 @@
   set_fact:
     host_ip_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 
-- name: Get Swarm infos
-  docker_swarm:
-    state: present
-  register: docker_swarm_info
+#- name: Get Swarm infos
+#  when: ansible_distribution == 'CentOS'
+#  docker_swarm:
+#    state: present
+#  register: docker_swarm_info
+
+- name: Get Manager Token
+  when: ansible_distribution == 'CentOS'
+  ansible.builtin.shell: docker swarm join-token -q manager
+  changed_when: false
+  register: docker_swarm_join_token_manager_shell
+
+- name: Get Worker Token
+  when: ansible_distribution == 'CentOS'
+  ansible.builtin.shell: docker swarm join-token -q worker
+  changed_when: false
+  register: docker_swarm_join_token_worker_shell
 
 - set_fact:
-    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+    docker_swarm_join_token_manager: "{{ docker_swarm_join_token_manager_shell.stdout }}"
+    docker_swarm_join_token_worker: "{{ docker_swarm_join_token_worker_shell.stdout }}"
+
+- set_fact:
+#    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+    docker_swarm_join_token_manager: "{{ docker_swarm_join_token_manager_shell.stdout }}"
+    docker_swarm_join_token_worker: "{{ docker_swarm_join_token_worker_shell.stdout }}"
     docker_swarm_manager_ip: "{{ host_ip_address }}"
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ groups['all']}}"
 
 - set_fact:
-    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+#    docker_swarm_facts: "{{ docker_swarm_info.swarm_facts }}"
+    docker_swarm_join_token_manager: "{{ docker_swarm_join_token_manager_shell.stdout }}"
+    docker_swarm_join_token_worker: "{{ docker_swarm_join_token_worker_shell.stdout }}"
   delegate_to: "localhost"
   delegate_facts: true
