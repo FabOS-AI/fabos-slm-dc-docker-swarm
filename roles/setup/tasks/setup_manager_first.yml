@@ -25,32 +25,8 @@
     - ansible_lsb.id == 'Raspbian'
   shell: /sbin/iptables-legacy -t filter -A INPUT -p tcp -m conntrack -j ACCEPT --destination-port 2377 --ctstate NEW,ESTABLISHED
 
-- name: "Add firewall rules (CentOS)"
-  when: ansible_distribution == 'CentOS'
-  block:
-    - name: "Add rule"
-      ansible.posix.firewalld:
-        port: "{{ item }}"
-        permanent: yes
-        immediate: yes
-        state: enabled
-      loop:
-        - 2376/tcp
-        - 2377/tcp
-        - 7946/tcp
-        - 7946/udp
-        - 4789/udp
-      register: add_firewall_rule
-
-    - name: Restart services
-      when: add_firewall_rule.changed
-      ansible.builtin.systemd:
-        state: restarted
-        daemon_reload: yes
-        name: "{{ item }}"
-      loop:
-        - firewalld
-        - docker
+- name: Setup Firewall
+  ansible.builtin.include_tasks: helper/add_firewall_rules.yml
 
 - name: Init a new swarm with default parameters (Legacy)
   when: ansible_distribution == 'CentOS'
@@ -69,4 +45,4 @@
   register: docker_swarm_info
 
 - name: Get swarm facts
-  include_tasks: get_swarm_facts.yml
+  include_tasks: helper/get_swarm_facts.yml
